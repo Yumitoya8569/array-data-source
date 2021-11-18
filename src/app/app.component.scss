@@ -1,0 +1,49 @@
+.table-block{
+    margin-top: 10px;
+    margin-bottom: 10px;
+    height: 250px;
+    width: 350px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    table{         
+        thead {
+            position: sticky;
+            top: 0px;
+            background-color: white;
+            cursor: pointer;
+            user-select: none;
+            th{
+                text-align: left;
+                width: 75px;
+            
+                &:hover {
+                    color: gray;
+                  }
+            }
+        }
+    }
+
+}
+
+.sort {
+    &-asc {
+        position: relative;
+        &::after {
+            content: '\2193';
+            position: absolute;
+            right: 10px;
+        }
+    }
+    &-desc {
+        position: relative;
+        &::after {
+            content: '\2191';
+            position: absolute;
+            right: 10px;
+        }
+    }
+}
+
+.btnDown{
+    background-color: darkgray;
+}
