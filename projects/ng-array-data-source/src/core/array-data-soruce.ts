@@ -47,7 +47,7 @@ export class ArrayDataSource<T> {
     }
     set pageIndex(value) {
         value = Math.max(Math.round(value), 0);
-        this._pageIndex.next(Math.round(value));
+        this._pageIndex.next(value);
     }
 
     private _pageSize: BehaviorSubject<number>;
@@ -146,7 +146,6 @@ export class ArrayDataSource<T> {
     }
 
     private getPageData(data: T[], size: number, index: number) {
-        // get page data
         size = size > 0 ? size : data.length;
         index = index < this._pageCount ? index : this._pageCount - 1;
         const startPos = index * size;

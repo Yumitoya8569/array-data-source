@@ -1,3 +1,9 @@
+export enum SortDirection {
+    None,
+    Asc,
+    Desc
+}
+
 // @dynamic
 export class Utils {
 
@@ -5,8 +11,7 @@ export class Utils {
         return (item: any) => {
             if (!filter) { return true; }
 
-            let result = true;
-            let mixedData = paths.map(path => this.get(item, path)).join('');
+            let mixedData = this.getMixedData(item, paths);
 
             if (ignoreCase) {
                 filter = filter.toLowerCase();
@@ -14,30 +19,51 @@ export class Utils {
             }
 
             if (isFuzzy) {
-                const fuzzyRegxStr = this.escapeRegExp(filter)
-                    .split(' ')
-                    .map(s => s.trim())
-                    .filter(s => !!s)
-                    .reduce((a, b) => a + `(?=.*${b})`, '') + '';
-                const regx = new RegExp(fuzzyRegxStr);
-                if (!regx.test(mixedData)) { result = false; }
-
+                return this.compareFuzzy(mixedData, filter);
             } else {
-                if (filter !== mixedData) { result = false; }
+                return mixedData === filter;
             }
-            return result;
         }
     }
 
-    static sortFunc(path: string, sortType: 'asc' | 'desc') {
-        if (sortType === 'asc') {
-            return (a: any, b: any) => this.get(a, path) < this.get(b, path) ? -1 : this.get(a, path) > this.get(b, path) ? 1 : 0;
-        } else {
-            return (a: any, b: any) => this.get(a, path) < this.get(b, path) ? 1 : this.get(a, path) > this.get(b, path) ? -1 : 0;
+    static sortFunc(path: string, sortDirection: SortDirection) {
+        return (a: any, b: any) => {
+            const dataA = this.getData(a, path);
+            const dataB = this.getData(b, path);
+
+            if (sortDirection === SortDirection.Desc) {
+                return this.compareDesc(dataA, dataB);
+            } else if (sortDirection === SortDirection.Asc) {
+                return this.compareAsc(dataA, dataB);
+            } else {
+                return 0;
+            }
         }
     }
 
-    private static get(item: any, path: string): any {
+    static compareDesc(a: any, b: any) {
+        return a < b ? 1 : a > b ? -1 : 0;
+    }
+
+    static compareAsc(a: any, b: any) {
+        return a < b ? -1 : a > b ? 1 : 0;
+    }
+
+    static compareFuzzy(data: string, filter: string) {
+        const fuzzyRegxStr = this.escapeRegExp(filter)
+            .split(' ')
+            .map(s => s.trim())
+            .filter(s => !!s)
+            .reduce((a, b) => a + `(?=.*${b})`, '') + '';
+        const regx = new RegExp(fuzzyRegxStr);
+        return regx.test(data)
+    }
+
+    static getMixedData(item: any, paths: string[]) {
+        return paths.map(path => this.getData(item, path)).join('');
+    }
+
+    static getData(item: any, path: string) {
         const pathArr = path.split('.');
 
         let i = 0;
@@ -48,7 +74,7 @@ export class Utils {
         return result;
     }
 
-    private static escapeRegExp(str: string) {
+    static escapeRegExp(str: string) {
         return str.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
     }
 }
